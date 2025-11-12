@@ -101,7 +101,7 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-3">
-            Choose Your 30-Day Reset
+            Life Reset
           </h1>
           <p className="text-slate-300 text-lg">
             Select a transformation program to begin your journey
@@ -188,7 +188,7 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
               onClick={handleStartProgram}
               className="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-100 transition-colors shadow-xl"
             >
-              Start Your 30-Day Reset
+              Start Your Reset
             </button>
           </div>
         )}
