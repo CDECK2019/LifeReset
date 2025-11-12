@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database, TaskCategories } from '../lib/database.types';
-import { BookOpen, Dumbbell, Smartphone, Pen, Heart } from 'lucide-react';
+import { BookOpen, Dumbbell, Smartphone, Pen, Heart, Settings } from 'lucide-react';
+import { ProgramCustomizer } from './ProgramCustomizer';
 
 type Program = Database['public']['Tables']['programs']['Row'];
 
@@ -21,6 +22,7 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
+  const [customizingProgram, setCustomizingProgram] = useState<Program | null>(null);
 
   useEffect(() => {
     loadPrograms();
@@ -56,6 +58,20 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
       .eq('id', user.id);
 
     onProgramSelect(selectedProgram);
+  };
+
+  const handleCustomize = (program: Program, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCustomizingProgram(program);
+  };
+
+  const handleCustomizerClose = () => {
+    setCustomizingProgram(null);
+  };
+
+  const handleCustomizerSave = () => {
+    setCustomizingProgram(null);
+    onProgramSelect('');
   };
 
   const getTotalTasks = (taskCategories: TaskCategories) => {
@@ -101,25 +117,25 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
             const isSelected = selectedProgram === program.id;
 
             return (
-              <button
-                key={program.id}
-                onClick={() => setSelectedProgram(program.id)}
-                className={`bg-white rounded-2xl p-6 text-left transition-all transform hover:scale-105 ${
-                  isSelected
-                    ? 'ring-4 ring-slate-500 shadow-2xl'
-                    : 'hover:shadow-xl'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="bg-slate-100 p-3 rounded-xl">
-                    <Icon className="w-6 h-6 text-slate-700" />
-                  </div>
-                  {isSelected && (
-                    <div className="bg-slate-900 text-white text-xs px-3 py-1 rounded-full font-medium">
-                      Selected
+              <div key={program.id} className="relative">
+                <button
+                  onClick={() => setSelectedProgram(program.id)}
+                  className={`w-full bg-white rounded-2xl p-6 text-left transition-all transform hover:scale-105 ${
+                    isSelected
+                      ? 'ring-4 ring-slate-500 shadow-2xl'
+                      : 'hover:shadow-xl'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="bg-slate-100 p-3 rounded-xl">
+                      <Icon className="w-6 h-6 text-slate-700" />
                     </div>
-                  )}
-                </div>
+                    {isSelected && (
+                      <div className="bg-slate-900 text-white text-xs px-3 py-1 rounded-full font-medium">
+                        Selected
+                      </div>
+                    )}
+                  </div>
 
                 <h3 className="text-xl font-bold text-slate-900 mb-2">
                   {program.name}
@@ -153,12 +169,21 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
                   </div>
                 </div>
               </button>
+
+              <button
+                onClick={(e) => handleCustomize(program, e)}
+                className="absolute bottom-4 right-4 bg-slate-900 text-white p-2 rounded-lg hover:bg-slate-700 transition-colors shadow-lg z-10"
+                title="Customize this program"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
             );
           })}
         </div>
 
         {selectedProgram && (
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
             <button
               onClick={handleStartProgram}
               className="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-100 transition-colors shadow-xl"
@@ -168,6 +193,19 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
           </div>
         )}
       </div>
+
+      {customizingProgram && (
+        <ProgramCustomizer
+          templateProgram={{
+            id: customizingProgram.id,
+            name: customizingProgram.name,
+            description: customizingProgram.description,
+            task_categories: customizingProgram.task_categories as TaskCategories,
+          }}
+          onClose={handleCustomizerClose}
+          onSave={handleCustomizerSave}
+        />
+      )}
     </div>
   );
 }
