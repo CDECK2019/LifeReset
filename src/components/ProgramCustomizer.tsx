@@ -17,6 +17,7 @@ interface ProgramCustomizerProps {
 export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramCustomizerProps) {
   const [programName, setProgramName] = useState(`My ${templateProgram.name}`);
   const [programDescription, setProgramDescription] = useState(templateProgram.description || '');
+  const [durationDays, setDurationDays] = useState(30);
   const [categories, setCategories] = useState<TaskCategories>(
     JSON.parse(JSON.stringify(templateProgram.task_categories))
   );
@@ -82,7 +83,7 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
       .insert({
         name: programName,
         description: programDescription,
-        duration_days: 30,
+        duration_days: durationDays,
         task_categories: categories,
         is_custom: true,
         is_template: false,
@@ -143,17 +144,50 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Program Name
-              </label>
-              <input
-                type="text"
-                value={programName}
-                onChange={(e) => setProgramName(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                placeholder="My Custom Program"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Program Name
+                </label>
+                <input
+                  type="text"
+                  value={programName}
+                  onChange={(e) => setProgramName(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  placeholder="My Custom Program"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Duration (days)
+                </label>
+                <input
+                  type="number"
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 30)))}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  placeholder="30"
+                  min="1"
+                  max="365"
+                />
+                <div className="flex gap-1 mt-2">
+                  {[7, 14, 21, 30, 60, 90].map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setDurationDays(days)}
+                      className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                        durationDays === days
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {days}d
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>

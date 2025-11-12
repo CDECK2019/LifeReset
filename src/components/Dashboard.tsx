@@ -96,7 +96,7 @@ export function Dashboard() {
                 {program.name}
               </h1>
               <p className="text-sm text-slate-600 mt-0.5">
-                Day {getCurrentDay(profile.streak_start_date)} of 30
+                Day {getCurrentDay(profile.streak_start_date, program.duration_days)} of {program.duration_days}
               </p>
             </div>
 
@@ -143,12 +143,12 @@ export function Dashboard() {
   );
 }
 
-function getCurrentDay(startDate: string | null): number {
+function getCurrentDay(startDate: string | null, maxDays: number = 30): number {
   if (!startDate) return 1;
 
   const start = new Date(startDate);
   const today = new Date();
   const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 
-  return Math.min(Math.max(diff + 1, 1), 30);
+  return Math.min(Math.max(diff + 1, 1), maxDays);
 }
