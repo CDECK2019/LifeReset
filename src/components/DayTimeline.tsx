@@ -101,82 +101,82 @@ export function DayTimeline({ programId, durationDays, onDaySelect, selectedDay 
   };
 
   return (
-    <div className="mb-8">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+    <div className="mb-12">
+      <div className="bg-white rounded-3xl border border-slate-100 p-8">
+        <h2 className="text-2xl font-light text-slate-900 mb-6 tracking-tight">
           Your Journey
         </h2>
 
         <div
           ref={scrollContainerRef}
-          className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100"
+          className="flex flex-col gap-2 max-h-[600px] overflow-y-auto pr-2"
         >
           {days.map((dayStatus) => (
             <button
               key={dayStatus.day}
               onClick={() => !dayStatus.isFuture && onDaySelect(dayStatus.day)}
               disabled={dayStatus.isFuture}
-              className={`flex items-center gap-4 p-3 rounded-lg transition-all ${
+              className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 ${
                 dayStatus.isFuture
-                  ? 'opacity-40 cursor-not-allowed'
+                  ? 'opacity-30 cursor-not-allowed'
                   : 'hover:bg-slate-50 cursor-pointer'
               } ${
                 selectedDay === dayStatus.day
-                  ? 'bg-slate-100 shadow-md'
+                  ? 'bg-slate-50 shadow-sm scale-[1.02]'
                   : dayStatus.isToday
-                  ? 'bg-blue-50'
+                  ? 'bg-gradient-to-r from-blue-50 to-cyan-50'
                   : ''
               }`}
             >
               <div
-                className={`relative flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center transition-all ${
+                className={`relative flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
                   selectedDay === dayStatus.day
-                    ? 'ring-4 ring-slate-400 shadow-lg'
+                    ? 'ring-2 ring-slate-900 ring-offset-2'
                     : dayStatus.isToday
-                    ? 'ring-4 ring-blue-400 shadow-lg'
+                    ? 'ring-2 ring-blue-400 ring-offset-2'
                     : ''
                 } ${
                   dayStatus.isFuture
                     ? 'bg-slate-100'
                     : dayStatus.completed
-                    ? 'bg-green-500'
+                    ? 'bg-gradient-to-br from-emerald-400 to-teal-500'
                     : dayStatus.completionPercentage > 0
-                    ? 'bg-yellow-400'
+                    ? 'bg-gradient-to-br from-amber-400 to-orange-400'
                     : 'bg-slate-200'
                 }`}
                 style={{
                   background: !dayStatus.isFuture && !dayStatus.completed && dayStatus.completionPercentage > 0
-                    ? `conic-gradient(#22c55e ${dayStatus.completionPercentage * 3.6}deg, #fbbf24 0deg)`
+                    ? `conic-gradient(#10b981 ${dayStatus.completionPercentage * 3.6}deg, #f59e0b 0deg)`
                     : undefined,
                 }}
               >
                 <div className={`absolute inset-2 rounded-full flex items-center justify-center ${
                   dayStatus.isFuture
-                    ? 'bg-slate-50'
+                    ? 'bg-white'
                     : dayStatus.completed
-                    ? 'bg-green-400'
+                    ? 'bg-gradient-to-br from-emerald-300 to-teal-400'
                     : dayStatus.completionPercentage > 0
-                    ? 'bg-yellow-300'
-                    : 'bg-slate-100'
+                    ? 'bg-gradient-to-br from-amber-300 to-orange-300'
+                    : 'bg-white'
                 }`}>
                   {dayStatus.completed ? (
-                    <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
                   ) : (
-                    <Circle className={`w-4 h-4 ${
-                      dayStatus.isFuture ? 'text-slate-400' : 'text-slate-500'
+                    <Circle className={`w-3 h-3 ${
+                      dayStatus.isFuture ? 'text-slate-300' : 'text-slate-400'
                     }`} />
                   )}
                 </div>
 
                 {dayStatus.isToday && (
-                  <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-light px-2 py-0.5 rounded-full shadow-sm">
                     NOW
                   </div>
                 )}
               </div>
 
               <div className="flex-1 text-left">
-                <div className={`font-semibold ${
+                <div className={`font-light text-lg ${
                   dayStatus.isToday
                     ? 'text-blue-600'
                     : dayStatus.isFuture
@@ -185,19 +185,19 @@ export function DayTimeline({ programId, durationDays, onDaySelect, selectedDay 
                 }`}>
                   Day {dayStatus.day}
                 </div>
-                <div className="text-xs text-slate-500 mt-0.5">
-                  {dayStatus.date}
+                <div className="text-xs text-slate-400 mt-0.5 font-light">
+                  {new Date(dayStatus.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </div>
               </div>
 
               {dayStatus.completionPercentage > 0 && !dayStatus.completed && (
-                <div className="text-sm font-medium text-slate-600">
+                <div className="text-sm font-light text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                   {dayStatus.completionPercentage}%
                 </div>
               )}
 
               {dayStatus.completed && (
-                <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                <div className="text-xs font-light text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
                   Complete
                 </div>
               )}

@@ -76,8 +76,8 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-600 text-lg">Loading...</div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-slate-400 text-lg font-light">Loading...</div>
       </div>
     );
   }
@@ -87,41 +87,41 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div className="min-h-screen bg-white">
+      <header className="bg-white border-b border-slate-100 sticky top-0 z-40 backdrop-blur-lg bg-white/80">
+        <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-3xl font-light text-slate-900 tracking-tight">
                 {program.name}
               </h1>
-              <p className="text-sm text-slate-600 mt-0.5">
+              <p className="text-sm text-slate-400 mt-1 font-light">
                 Day {getCurrentDay(profile.streak_start_date, program.duration_days)} of {program.duration_days}
               </p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               {streak > 0 && (
-                <div className="flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-lg">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                  <span className="font-bold text-slate-900">{streak}</span>
-                  <span className="text-sm text-slate-600">day streak</span>
+                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-amber-50 px-5 py-2.5 rounded-full border border-orange-100">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  <span className="font-light text-slate-900 text-lg">{streak}</span>
+                  <span className="text-sm text-slate-500 font-light">day streak</span>
                 </div>
               )}
 
               <button
                 onClick={signOut}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-2.5 hover:bg-slate-50 rounded-full transition-colors"
                 title="Sign out"
               >
-                <LogOut className="w-5 h-5 text-slate-600" />
+                <LogOut className="w-4 h-4 text-slate-400" />
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-8 py-12">
         <DayTimeline
           programId={program.id}
           durationDays={program.duration_days}

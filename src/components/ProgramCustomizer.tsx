@@ -125,48 +125,48 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-8 py-6 flex items-center justify-between border-b border-slate-200">
           <div>
-            <h2 className="text-2xl font-bold">Customize Your Program</h2>
-            <p className="text-slate-300 text-sm mt-1">
+            <h2 className="text-2xl font-light text-slate-900">Customize Your Program</h2>
+            <p className="text-slate-500 text-sm mt-1 font-light">
               Based on {templateProgram.name}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-white rounded-full transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-light text-slate-600 mb-2">
                   Program Name
                 </label>
                 <input
                   type="text"
                   value={programName}
                   onChange={(e) => setProgramName(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-light"
                   placeholder="My Custom Program"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-light text-slate-600 mb-2">
                   Duration (days)
                 </label>
                 <input
                   type="number"
                   value={durationDays}
                   onChange={(e) => setDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 30)))}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-light"
                   placeholder="30"
                   min="1"
                   max="365"
@@ -177,10 +177,10 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
                       key={days}
                       type="button"
                       onClick={() => setDurationDays(days)}
-                      className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                      className={`flex-1 px-2 py-1.5 text-xs rounded-lg transition-all font-light ${
                         durationDays === days
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          ? 'bg-slate-900 text-white shadow-sm'
+                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
                       {days}d
@@ -191,56 +191,56 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-light text-slate-600 mb-2">
                 Description
               </label>
               <textarea
                 value={programDescription}
                 onChange={(e) => setProgramDescription(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 resize-none"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none font-light"
                 rows={3}
                 placeholder="What is this program about?"
               />
             </div>
 
-            <div className="border-t border-slate-200 pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900">
+            <div className="border-t border-slate-100 pt-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-light text-slate-900">
                   Categories & Tasks
                 </h3>
-                <div className="text-sm text-slate-600">
+                <div className="text-sm text-slate-400 font-light">
                   {getTotalTasks()} tasks · ~{getTotalTime()} min/day
                 </div>
               </div>
 
               <div className="space-y-6">
                 {Object.entries(categories).map(([categoryKey, tasks]) => (
-                  <div key={categoryKey} className="bg-slate-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-slate-700 uppercase">
+                  <div key={categoryKey} className="bg-slate-50 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-light text-slate-900 uppercase tracking-wide">
                         {categoryKey.replace(/_/g, ' ')}
                       </h4>
                       <button
                         onClick={() => removeCategory(categoryKey)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                         title="Remove category"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <div className="space-y-3 mb-3">
+                    <div className="space-y-3 mb-4">
                       {tasks.map((task, taskIndex) => (
-                        <div key={task.id} className="bg-white rounded-lg p-3 border border-slate-200">
+                        <div key={task.id} className="bg-white rounded-xl p-4 border border-slate-100">
                           <div className="flex items-start gap-3">
-                            <GripVertical className="w-4 h-4 text-slate-400 mt-2 flex-shrink-0" />
+                            <GripVertical className="w-4 h-4 text-slate-300 mt-3 flex-shrink-0" />
 
-                            <div className="flex-1 space-y-2">
+                            <div className="flex-1 space-y-3">
                               <input
                                 type="text"
                                 value={task.name}
                                 onChange={(e) => updateTask(categoryKey, taskIndex, 'name', e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                className="w-full px-3 py-2 text-sm border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-light"
                                 placeholder="Task name"
                               />
 
@@ -248,17 +248,17 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
                                 type="text"
                                 value={task.description}
                                 onChange={(e) => updateTask(categoryKey, taskIndex, 'description', e.target.value)}
-                                className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                className="w-full px-3 py-2 text-sm border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-light text-slate-600"
                                 placeholder="Task description"
                               />
 
                               <div className="flex items-center gap-2">
-                                <label className="text-xs text-slate-600">Time (min):</label>
+                                <label className="text-xs text-slate-500 font-light">Time (min):</label>
                                 <input
                                   type="number"
                                   value={task.time_estimate}
                                   onChange={(e) => updateTask(categoryKey, taskIndex, 'time_estimate', parseInt(e.target.value) || 0)}
-                                  className="w-20 px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                  className="w-20 px-3 py-1.5 text-sm border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-light"
                                   min="0"
                                 />
                               </div>
@@ -266,7 +266,7 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
 
                             <button
                               onClick={() => removeTask(categoryKey, taskIndex)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors flex-shrink-0"
                               title="Remove task"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -278,7 +278,7 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
 
                     <button
                       onClick={() => addTask(categoryKey)}
-                      className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-3 border border-dashed border-slate-200 rounded-xl text-sm text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 font-light"
                     >
                       <Plus className="w-4 h-4" />
                       Add Task to {categoryKey.replace(/_/g, ' ')}
@@ -287,18 +287,18 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
                 ))}
               </div>
 
-              <div className="mt-4 flex gap-2">
+              <div className="mt-6 flex gap-3">
                 <input
                   type="text"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addCategory()}
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                  className="flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-light"
                   placeholder="New category name (e.g., Physical, Mental)"
                 />
                 <button
                   onClick={addCategory}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-2"
+                  className="px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors flex items-center gap-2 font-light"
                 >
                   <Plus className="w-4 h-4" />
                   Add Category
@@ -308,21 +308,21 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
           </div>
         </div>
 
-        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-          <div className="text-sm text-slate-600">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-8 py-5 border-t border-slate-200 flex items-center justify-between">
+          <div className="text-sm text-slate-500 font-light">
             Make sure to add all tasks you want to track daily
           </div>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors"
+              className="px-6 py-2.5 text-slate-600 hover:bg-white rounded-full font-light transition-all"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving || !programName.trim() || getTotalTasks() === 0}
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-8 py-2.5 bg-slate-900 text-white rounded-full font-light hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
             >
               {saving ? 'Saving...' : 'Save & Start Program'}
             </button>

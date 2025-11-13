@@ -178,56 +178,56 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-8 py-6 flex items-center justify-between border-b border-slate-200">
           <div>
-            <h2 className="text-2xl font-bold">Day {day} Mission Control</h2>
-            <p className="text-slate-300 text-sm mt-1">
+            <h2 className="text-2xl font-light text-slate-900">Day {day}</h2>
+            <p className="text-slate-500 text-sm mt-1 font-light">
               {completedCount} of {totalTasks} tasks completed ({completionPercentage}%)
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-white rounded-full transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <Check className="w-5 h-5" />
+                <h3 className="text-lg font-light text-slate-900 mb-6 flex items-center gap-2">
+                  <Check className="w-5 h-5 text-slate-400" />
                   Tasks
                 </h3>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {Object.entries(taskCategories).map(([category, tasks]) => (
-                    <div key={category} className="bg-slate-50 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-slate-700 uppercase mb-3">
-                        {category}
+                    <div key={category} className="bg-slate-50 rounded-2xl p-6">
+                      <h4 className="text-sm font-light text-slate-900 uppercase tracking-wide mb-4">
+                        {category.replace(/_/g, ' ')}
                       </h4>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {tasks.map((task) => {
                           const isCompleted = !!completedTasks[task.id];
                           return (
                             <button
                               key={task.id}
                               onClick={() => toggleTask(task.id)}
-                              className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                              className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
                                 isCompleted
-                                  ? 'bg-green-50 border-green-500'
-                                  : 'bg-white border-slate-200 hover:border-slate-300'
+                                  ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200'
+                                  : 'bg-white border-slate-100 hover:border-slate-200'
                               }`}
                             >
                               <div className="flex items-start gap-3">
                                 <div
-                                  className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                                  className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                                     isCompleted
-                                      ? 'bg-green-500'
+                                      ? 'bg-gradient-to-br from-emerald-400 to-teal-500'
                                       : 'bg-slate-200'
                                   }`}
                                 >
@@ -236,16 +236,16 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className={`font-medium ${
-                                    isCompleted ? 'text-green-900' : 'text-slate-900'
+                                  <div className={`font-light ${
+                                    isCompleted ? 'text-emerald-900' : 'text-slate-900'
                                   }`}>
                                     {task.name}
                                   </div>
-                                  <div className="text-sm text-slate-600 mt-1">
+                                  <div className="text-sm text-slate-500 mt-1 font-light">
                                     {task.description}
                                   </div>
                                   {task.time_estimate > 0 && (
-                                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                                    <div className="flex items-center gap-1 text-xs text-slate-400 mt-2 font-light">
                                       <Clock className="w-3 h-3" />
                                       {task.time_estimate} min
                                     </div>
@@ -264,14 +264,14 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <Smile className="w-5 h-5" />
+                <h3 className="text-lg font-light text-slate-900 mb-6 flex items-center gap-2">
+                  <Smile className="w-5 h-5 text-slate-400" />
                   How are you feeling?
                 </h3>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-light text-slate-600 mb-3">
                       Energy Level
                     </label>
                     <div className="flex gap-2">
@@ -279,10 +279,10 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
                         <button
                           key={rating}
                           onClick={() => setEnergyRating(rating)}
-                          className={`flex-1 py-2 rounded-lg border-2 font-medium transition-all ${
+                          className={`flex-1 py-2.5 rounded-xl border font-light transition-all duration-300 ${
                             energyRating === rating
-                              ? 'bg-blue-500 border-blue-500 text-white'
-                              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                              ? 'bg-gradient-to-r from-blue-500 to-cyan-500 border-blue-500 text-white shadow-lg scale-110'
+                              : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'
                           }`}
                         >
                           {rating}
@@ -292,7 +292,7 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-light text-slate-600 mb-3">
                       Mood Rating
                     </label>
                     <div className="flex gap-2">
@@ -300,10 +300,10 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
                         <button
                           key={rating}
                           onClick={() => setMoodRating(rating)}
-                          className={`flex-1 py-2 rounded-lg border-2 font-medium transition-all ${
+                          className={`flex-1 py-2.5 rounded-xl border font-light transition-all duration-300 ${
                             moodRating === rating
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-500 text-white shadow-lg scale-110'
+                              : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'
                           }`}
                         >
                           {rating}
@@ -315,8 +315,8 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
+                <h3 className="text-lg font-light text-slate-900 mb-4 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-slate-400" />
                   Daily Reflection
                 </h3>
                 <textarea
@@ -324,21 +324,21 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
                   onChange={(e) => setReflection(e.target.value)}
                   onBlur={saveReflection}
                   placeholder="What was your win today? What challenged you?"
-                  className="w-full h-32 px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent resize-none"
+                  className="w-full h-32 px-4 py-3 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none font-light"
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-          <div className="text-sm text-slate-600">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-8 py-5 border-t border-slate-200 flex items-center justify-between">
+          <div className="text-sm text-slate-500 font-light">
             Progress: {completedCount}/{totalTasks} tasks
           </div>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors"
+              className="px-6 py-2.5 text-slate-600 hover:bg-white rounded-full font-light transition-all"
             >
               Close
             </button>
@@ -346,7 +346,7 @@ export function MissionControl({ programId, program, day, onClose, onComplete }:
               <button
                 onClick={completeDay}
                 disabled={saving}
-                className="px-6 py-2.5 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                className="px-8 py-2.5 bg-slate-900 text-white rounded-full font-light hover:bg-slate-800 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl"
               >
                 {saving ? 'Saving...' : 'Complete Day'}
               </button>

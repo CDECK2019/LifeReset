@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database, TaskCategories } from '../lib/database.types';
-import { BookOpen, Dumbbell, Smartphone, Pen, Heart, Settings } from 'lucide-react';
+import { Clock, Sliders } from 'lucide-react';
 import { ProgramCustomizer } from './ProgramCustomizer';
 
 type Program = Database['public']['Tables']['programs']['Row'];
 
-const PROGRAM_ICONS = {
-  'Miracle Morning': BookOpen,
-  '75 Hard Lite': Dumbbell,
-  'Digital Detox Reset': Smartphone,
-  "Writer's Reset": Pen,
-  'Fitness Foundation': Heart,
+const PROGRAM_GRADIENTS = {
+  'Miracle Morning': 'from-amber-400 to-orange-500',
+  '75 Hard Lite': 'from-emerald-400 to-teal-500',
+  'Digital Detox Reset': 'from-blue-400 to-indigo-500',
+  "Writer's Reset": 'from-rose-400 to-pink-500',
+  'Fitness Foundation': 'from-cyan-400 to-blue-500',
 };
 
 interface ProgramSelectorProps {
@@ -90,103 +90,105 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-lg">Loading programs...</div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-slate-400 text-lg font-light">Loading programs...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-3">
+    <div className="min-h-screen bg-white p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-16">
+          <h1 className="text-6xl font-light text-slate-900 mb-4 tracking-tight">
             Life Reset
           </h1>
-          <p className="text-slate-300 text-lg">
+          <p className="text-xl text-slate-500 font-light">
             Select a transformation program to begin your journey
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           {programs.map((program) => {
-            const Icon = PROGRAM_ICONS[program.name as keyof typeof PROGRAM_ICONS] || BookOpen;
+            const gradient = PROGRAM_GRADIENTS[program.name as keyof typeof PROGRAM_GRADIENTS] || 'from-slate-400 to-slate-600';
             const taskCategories = program.task_categories as TaskCategories;
             const totalTasks = getTotalTasks(taskCategories);
             const estimatedTime = getEstimatedTime(taskCategories);
             const isSelected = selectedProgram === program.id;
 
             return (
-              <div key={program.id} className="relative">
+              <div key={program.id} className="group relative">
                 <button
                   onClick={() => setSelectedProgram(program.id)}
-                  className={`w-full bg-white rounded-2xl p-6 text-left transition-all transform hover:scale-105 ${
+                  className={`w-full text-left transition-all duration-300 ${
                     isSelected
-                      ? 'ring-4 ring-slate-500 shadow-2xl'
-                      : 'hover:shadow-xl'
+                      ? 'scale-[1.02]'
+                      : 'hover:scale-[1.01]'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="bg-slate-100 p-3 rounded-xl">
-                      <Icon className="w-6 h-6 text-slate-700" />
-                    </div>
-                    {isSelected && (
-                      <div className="bg-slate-900 text-white text-xs px-3 py-1 rounded-full font-medium">
-                        Selected
+                  <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient} p-8 shadow-lg ${
+                    isSelected ? 'ring-2 ring-slate-900 ring-offset-4' : ''
+                  }`}>
+                    <div className="relative z-10">
+                      <div className="flex items-start justify-between mb-6">
+                        <h3 className="text-2xl font-light text-white tracking-tight">
+                          {program.name}
+                        </h3>
+                        {isSelected && (
+                          <div className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium">
+                            Selected
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
-                  {program.name}
-                </h3>
-                <p className="text-slate-600 text-sm mb-4 line-clamp-3">
-                  {program.description}
-                </p>
+                      <p className="text-white/90 text-sm mb-8 leading-relaxed font-light">
+                        {program.description}
+                      </p>
 
-                <div className="flex items-center gap-4 text-sm text-slate-500">
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium">{totalTasks}</span> tasks
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium">~{estimatedTime}</span> min/day
-                  </div>
-                </div>
+                      <div className="flex items-center gap-6 text-white/80 text-sm mb-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-white/60"></div>
+                          <span className="font-light">{totalTasks} tasks</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="font-light">{estimatedTime} min/day</span>
+                        </div>
+                      </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <div className="text-xs text-slate-500 font-medium mb-2">
-                    CATEGORIES
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.keys(taskCategories).map((category) => (
-                      <span
-                        key={category}
-                        className="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs capitalize"
-                      >
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </button>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.keys(taskCategories).map((category) => (
+                          <span
+                            key={category}
+                            className="bg-white/10 backdrop-blur-sm text-white/90 px-3 py-1 rounded-full text-xs font-light capitalize border border-white/20"
+                          >
+                            {category.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-              <button
-                onClick={(e) => handleCustomize(program, e)}
-                className="absolute bottom-4 right-4 bg-slate-900 text-white p-2 rounded-lg hover:bg-slate-700 transition-colors shadow-lg z-10"
-                title="Customize this program"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-            </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={(e) => handleCustomize(program, e)}
+                  className="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white p-2.5 rounded-full hover:bg-white/30 transition-all duration-300 z-10 opacity-0 group-hover:opacity-100"
+                  title="Customize this program"
+                >
+                  <Sliders className="w-4 h-4" />
+                </button>
+              </div>
             );
           })}
         </div>
 
         {selectedProgram && (
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center">
             <button
               onClick={handleStartProgram}
-              className="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-100 transition-colors shadow-xl"
+              className="bg-slate-900 text-white px-12 py-4 rounded-full font-light text-lg hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Start Your Reset
             </button>
