@@ -190,6 +190,39 @@ export interface Database {
           created_at?: string
         }
       }
+      notification_settings: {
+        Row: {
+          user_id: string
+          notifications_enabled: boolean
+          morning_notification_enabled: boolean
+          morning_notification_time: string
+          evening_notification_enabled: boolean
+          evening_notification_time: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          notifications_enabled?: boolean
+          morning_notification_enabled?: boolean
+          morning_notification_time?: string
+          evening_notification_enabled?: boolean
+          evening_notification_time?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          notifications_enabled?: boolean
+          morning_notification_enabled?: boolean
+          morning_notification_time?: string
+          evening_notification_enabled?: boolean
+          evening_notification_time?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+
     }
   }
 }

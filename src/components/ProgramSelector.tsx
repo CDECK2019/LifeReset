@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useMemo, memo } from 'react';
 import { supabase } from '../lib/supabase';
 import { Database, TaskCategories } from '../lib/database.types';
-import { Clock, Sliders, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Clock, Sliders, CheckCircle2, ArrowRight, Trash2, Eye, EyeOff, Undo2 } from 'lucide-react';
 import { ProgramCustomizer } from './ProgramCustomizer';
 
 type Program = Database['public']['Tables']['programs']['Row'];
 
 const PROGRAM_GRADIENTS: Record<string, string> = {
   'Miracle Morning': 'from-amber-400 via-orange-400 to-orange-500',
-  '75 Hard Lite': 'from-emerald-400 via-teal-400 to-teal-500',
-  'Digital Detox Reset': 'from-blue-400 via-indigo-400 to-indigo-500',
+  'Digital Detox': 'from-blue-400 via-indigo-400 to-indigo-500',
   "Writer's Reset": 'from-rose-400 via-pink-400 to-pink-500',
   'Fitness Foundation': 'from-cyan-400 via-blue-400 to-blue-500',
   'Psycho-Cybernetics': 'from-violet-600 via-purple-500 to-fuchsia-500',
+  'Eat, Pray, Love': 'from-emerald-400 via-teal-400 to-rose-400',
 };
 
 interface ProgramSelectorProps {
@@ -39,12 +39,16 @@ const ProgramCard = memo(({
   program,
   isSelected,
   onSelect,
-  onCustomize
+  onCustomize,
+  onDelete,
+  isHiddenView = false
 }: {
   program: Program;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onCustomize: (p: Program, e: React.MouseEvent) => void;
+  onDelete: (p: Program, e: React.MouseEvent) => void;
+  isHiddenView?: boolean;
 }) => {
   const gradient = PROGRAM_GRADIENTS[program.name] || 'from-slate-400 to-slate-600';
 
@@ -115,14 +119,24 @@ const ProgramCard = memo(({
         </div>
       </button>
 
-      <button
-        onClick={(e) => onCustomize(program, e)}
-        className="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white p-2.5 rounded-full hover:bg-white/30 transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 focus:opacity-100"
-        title="Customize this program"
-        aria-label="Customize program"
-      >
-        <Sliders className="w-4 h-4" />
-      </button>
+      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all duration-300 z-20">
+        <button
+          onClick={(e) => onCustomize(program, e)}
+          className="bg-white/20 backdrop-blur-md text-white p-2.5 rounded-full hover:bg-white/30 transition-all duration-300"
+          title="Customize this program"
+          aria-label="Customize program"
+        >
+          <Sliders className="w-4 h-4" />
+        </button>
+        <button
+          onClick={(e) => onDelete(program, e)}
+          className="bg-white/20 backdrop-blur-md text-white p-2.5 rounded-full hover:bg-red-500/50 transition-all duration-300"
+          title={isHiddenView ? "Restore program" : (program.is_template ? "Hide program" : "Delete program")}
+          aria-label={isHiddenView ? "Restore" : "Delete"}
+        >
+          {isHiddenView ? <Undo2 className="w-4 h-4" /> : (program.is_template ? <EyeOff className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />)}
+        </button>
+      </div>
     </div>
   );
 });
@@ -134,17 +148,36 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
   const [customizingProgram, setCustomizingProgram] = useState<Program | null>(null);
+  const [hiddenProgramIds, setHiddenProgramIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('hiddenPrograms');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showHidden, setShowHidden] = useState(false);
 
   useEffect(() => {
     loadPrograms();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('hiddenPrograms', JSON.stringify(hiddenProgramIds));
+  }, [hiddenProgramIds]);
+
   const loadPrograms = async () => {
-    const { data, error } = await supabase
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let query = supabase
       .from('programs')
       .select('*')
-      .eq('is_template', true)
       .order('name');
+
+    if (user) {
+      // Fetch templates AND user's custom programs
+      query = query.or(`is_template.eq.true,created_by.eq.${user.id}`);
+    } else {
+      query = query.eq('is_template', true);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error loading programs:', error);
@@ -178,14 +211,53 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
     setCustomizingProgram(program);
   }, []);
 
+  const handleDelete = (program: Program, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (showHidden) {
+      // Restore program
+      setHiddenProgramIds(prev => prev.filter(id => id !== program.id));
+      return;
+    }
+
+    if (program.is_template) {
+      // Hide template
+      if (window.confirm('Remove this program from your view? You can restore it later from the menu.')) {
+        setHiddenProgramIds(prev => [...prev, program.id]);
+        if (selectedProgram === program.id) setSelectedProgram(null);
+      }
+    } else {
+      // Delete custom program
+      if (window.confirm('Are you sure you want to delete this custom program? This cannot be undone.')) {
+        deleteProgram(program.id);
+      }
+    }
+  };
+
+  const deleteProgram = async (id: string) => {
+    const { error } = await supabase.from('programs').delete().eq('id', id);
+    if (error) {
+      console.error('Error deleting program:', error);
+      alert('Failed to delete program');
+    } else {
+      setPrograms(prev => prev.filter(p => p.id !== id));
+      if (selectedProgram === id) setSelectedProgram(null);
+    }
+  };
+
   const handleCustomizerClose = () => {
     setCustomizingProgram(null);
   };
 
   const handleCustomizerSave = () => {
     setCustomizingProgram(null);
+    loadPrograms(); // Reload to see new custom program
     onProgramSelect('');
   };
+
+  const visiblePrograms = programs.filter(p =>
+    showHidden ? hiddenProgramIds.includes(p.id) : !hiddenProgramIds.includes(p.id)
+  );
 
   if (loading) {
     return (
@@ -199,19 +271,40 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 p-8 pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] transition-colors duration-500">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 animate-in slide-in-from-top-8 fade-in duration-700">
-          <h1 className="text-6xl font-extralight text-slate-900 mb-4 tracking-tight">
-            Life <span className="font-semibold">Reset</span>
-          </h1>
-          <p className="text-xl text-slate-500 font-light max-w-2xl leading-relaxed">
-            Select a transformation program to begin your journey. Each path is designed to reset your habits and rebuild your discipline.
-          </p>
+        <div className="mb-16 animate-in slide-in-from-top-8 fade-in duration-700 flex justify-between items-end">
+          <div>
+            <h1 className="text-6xl font-extralight text-slate-900 mb-4 tracking-tight">
+              Life <span className="font-semibold">Reset</span>
+            </h1>
+            <p className="text-xl text-slate-500 font-light max-w-2xl leading-relaxed">
+              {showHidden
+                ? "Hidden Programs"
+                : "Select a transformation program to begin your journey. Each path is designed to reset your habits and rebuild your discipline."}
+            </p>
+          </div>
+
+          <button
+            onClick={() => setShowHidden(!showHidden)}
+            className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors text-sm font-medium px-4 py-2 rounded-full hover:bg-slate-100"
+          >
+            {showHidden ? (
+              <>
+                <ArrowRight className="w-4 h-4 rotate-180" />
+                Back to Programs
+              </>
+            ) : (
+              <>
+                <Eye className="w-4 h-4" />
+                Manage Hidden ({hiddenProgramIds.length})
+              </>
+            )}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {programs.map((program, index) => (
+          {visiblePrograms.map((program, index) => (
             <div
               key={program.id}
               className="animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-backwards"
@@ -222,12 +315,63 @@ export function ProgramSelector({ onProgramSelect }: ProgramSelectorProps) {
                 isSelected={selectedProgram === program.id}
                 onSelect={setSelectedProgram}
                 onCustomize={handleCustomize}
+                onDelete={handleDelete}
+                isHiddenView={showHidden}
               />
             </div>
           ))}
+
+          {/* Create Custom Program Card - Only show in main view */}
+          {!showHidden && (
+            <div
+              className="animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-backwards"
+              style={{ animationDelay: `${visiblePrograms.length * 100}ms` }}
+            >
+              <button
+                onClick={() => setCustomizingProgram({
+                  id: 'new',
+                  name: 'My Custom Program',
+                  description: 'Design your own transformation journey',
+                  task_categories: {},
+                  duration_days: 30,
+                  is_custom: true,
+                  is_template: false,
+                  created_by: null,
+                  created_at: new Date().toISOString(),
+                } as Program)}
+                className="w-full h-full text-left group hover:scale-[1.02] transition-all duration-500 ease-out rounded-3xl outline-none focus:ring-4 focus:ring-slate-200"
+              >
+                <div className="relative h-full overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-8 shadow-lg transition-all duration-500 border-2 border-dashed border-white/20 hover:border-white/40 min-h-[400px]">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 opacity-5">
+                    <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,.05)_25%,rgba(255,255,255,.05)_50%,transparent_50%,transparent_75%,rgba(255,255,255,.05)_75%,rgba(255,255,255,.05))] bg-[length:60px_60px]" />
+                  </div>
+
+                  <div className="relative z-10 flex flex-col h-full items-center justify-center text-center">
+                    <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Sliders className="w-12 h-12 text-white" />
+                    </div>
+
+                    <h3 className="text-3xl font-semibold text-white tracking-tight drop-shadow-sm mb-3">
+                      Create Custom Program
+                    </h3>
+
+                    <p className="text-white/80 text-sm leading-relaxed font-medium max-w-xs mb-6">
+                      Design your own transformation journey with custom tasks, categories, and goals
+                    </p>
+
+                    <div className="flex items-center gap-2 text-white/90 text-sm font-medium bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Build From Scratch</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className={`fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none transition-all duration-500 ${selectedProgram ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+        <div className={`fixed bottom-0 left-0 right-0 p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none transition-all duration-500 ${selectedProgram ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
           <div className="max-w-7xl mx-auto flex justify-center pointer-events-auto">
             <button
               onClick={handleStartProgram}

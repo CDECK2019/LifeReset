@@ -12,10 +12,11 @@ interface ProgramCustomizerProps {
   };
   onClose: () => void;
   onSave: () => void;
+  isEditMode?: boolean; // If true, updates existing program instead of creating new
 }
 
-export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramCustomizerProps) {
-  const [programName, setProgramName] = useState(`My ${templateProgram.name}`);
+export function ProgramCustomizer({ templateProgram, onClose, onSave, isEditMode = false }: ProgramCustomizerProps) {
+  const [programName, setProgramName] = useState(isEditMode ? templateProgram.name : `My ${templateProgram.name}`);
   const [programDescription, setProgramDescription] = useState(templateProgram.description || '');
   const [durationDays, setDurationDays] = useState(30);
   const [categories, setCategories] = useState<TaskCategories>(
@@ -78,33 +79,53 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: newProgram, error } = await supabase
-      .from('programs')
-      .insert({
-        name: programName,
-        description: programDescription,
-        duration_days: durationDays,
-        task_categories: categories,
-        is_custom: true,
-        is_template: false,
-        created_by: user.id,
-      })
-      .select()
-      .single();
+    if (isEditMode) {
+      // Update existing program
+      const { error } = await (supabase
+        .from('programs') as any)
+        .update({
+          name: programName,
+          description: programDescription,
+          duration_days: durationDays,
+          task_categories: categories,
+        })
+        .eq('id', templateProgram.id);
 
-    if (error) {
-      console.error('Error saving program:', error);
-      setSaving(false);
-      return;
+      if (error) {
+        console.error('Error updating program:', error);
+        setSaving(false);
+        return;
+      }
+    } else {
+      // Create new program
+      const { data: newProgram, error } = await (supabase
+        .from('programs') as any)
+        .insert({
+          name: programName,
+          description: programDescription,
+          duration_days: durationDays,
+          task_categories: categories,
+          is_custom: true,
+          is_template: false,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving program:', error);
+        setSaving(false);
+        return;
+      }
+
+      await (supabase
+        .from('users_profile') as any)
+        .update({
+          current_program_id: newProgram.id,
+          streak_start_date: new Date().toISOString().split('T')[0],
+        })
+        .eq('id', user.id);
     }
-
-    await supabase
-      .from('users_profile')
-      .update({
-        current_program_id: newProgram.id,
-        streak_start_date: new Date().toISOString().split('T')[0],
-      })
-      .eq('id', user.id);
 
     setSaving(false);
     onSave();
@@ -177,11 +198,10 @@ export function ProgramCustomizer({ templateProgram, onClose, onSave }: ProgramC
                       key={days}
                       type="button"
                       onClick={() => setDurationDays(days)}
-                      className={`flex-1 px-2 py-1.5 text-xs rounded-lg transition-all font-light ${
-                        durationDays === days
-                          ? 'bg-slate-900 text-white shadow-sm'
-                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                      }`}
+                      className={`flex-1 px-2 py-1.5 text-xs rounded-lg transition-all font-light ${durationDays === days
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                        }`}
                     >
                       {days}d
                     </button>

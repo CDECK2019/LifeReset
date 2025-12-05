@@ -44,12 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
 
     if (data.user) {
-      await supabase.from('users_profile').insert({
+      await (supabase.from('users_profile') as any).insert({
         id: data.user.id,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
 
-      await supabase.from('streaks').insert({
+      await (supabase.from('streaks') as any).insert({
         user_id: data.user.id,
       });
     }

@@ -1,9 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Database } from '../lib/database.types';
-import { Check, Circle } from 'lucide-react';
-
-type DailyLog = Database['public']['Tables']['daily_logs']['Row'];
+import { Check } from 'lucide-react';
 
 interface DayTimelineProps {
   programId: string;
@@ -49,7 +46,7 @@ export function DayTimeline({ programId, durationDays, onDaySelect, selectedDay 
       .from('users_profile')
       .select('streak_start_date')
       .eq('id', user.id)
-      .maybeSingle();
+      .maybeSingle() as any;
 
     if (!profile?.streak_start_date) return;
 
@@ -57,14 +54,14 @@ export function DayTimeline({ programId, durationDays, onDaySelect, selectedDay 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const { data: logs } = await supabase
+    const { data: logs } = (await supabase
       .from('daily_logs')
       .select('*')
       .eq('user_id', user.id)
-      .eq('program_id', programId);
+      .eq('program_id', programId)) as any;
 
     const logsByDate = new Map(
-      (logs || []).map(log => [log.date, log])
+      (logs || []).map((log: any) => [log.date, log])
     );
 
     const dayStatuses: DayStatus[] = [];
@@ -75,7 +72,7 @@ export function DayTimeline({ programId, durationDays, onDaySelect, selectedDay 
       dayDate.setHours(0, 0, 0, 0);
 
       const dateStr = dayDate.toISOString().split('T')[0];
-      const log = logsByDate.get(dateStr);
+      const log: any = logsByDate.get(dateStr);
 
       const isToday = dayDate.getTime() === today.getTime();
       const isFuture = dayDate.getTime() > today.getTime();
@@ -101,106 +98,95 @@ export function DayTimeline({ programId, durationDays, onDaySelect, selectedDay 
   };
 
   return (
-    <div className="mb-12">
-      <div className="bg-white rounded-3xl border border-slate-100 p-8">
-        <h2 className="text-2xl font-light text-slate-900 mb-6 tracking-tight">
+    <div className="mb-12 animate-slide-up">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
           Your Journey
         </h2>
+        <div className="text-sm font-medium text-slate-500 bg-white/50 px-3 py-1 rounded-full border border-white/50 backdrop-blur-sm">
+          {Math.round((days.filter(d => d.completed).length / durationDays) * 100)}% Complete
+        </div>
+      </div>
+
+      <div className="relative group">
+        {/* Fade gradients for scroll indication - only on desktop */}
+        <div className="hidden md:block absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
+        <div className="hidden md:block absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
+
+        {/* Fade gradients for vertical scroll on mobile */}
+        <div className="md:hidden absolute left-0 right-0 top-0 h-12 bg-gradient-to-b from-slate-50 to-transparent z-10 pointer-events-none" />
+        <div className="md:hidden absolute left-0 right-0 bottom-0 h-12 bg-gradient-to-t from-slate-50 to-transparent z-10 pointer-events-none" />
 
         <div
           ref={scrollContainerRef}
-          className="flex flex-col gap-2 max-h-[600px] overflow-y-auto pr-2"
+          className="flex flex-col md:flex-row gap-5 overflow-y-auto md:overflow-y-visible md:overflow-x-auto pb-8 pt-2 px-2 snap-y md:snap-x snap-mandatory scrollbar-hide max-h-[70vh] md:max-h-none"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {days.map((dayStatus) => (
+          {days.map((dayStatus, index) => (
             <button
               key={dayStatus.day}
               onClick={() => !dayStatus.isFuture && onDaySelect(dayStatus.day)}
               disabled={dayStatus.isFuture}
-              className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 ${
-                dayStatus.isFuture
-                  ? 'opacity-30 cursor-not-allowed'
-                  : 'hover:bg-slate-50 cursor-pointer'
-              } ${
-                selectedDay === dayStatus.day
-                  ? 'bg-slate-50 shadow-sm scale-[1.02]'
-                  : dayStatus.isToday
-                  ? 'bg-gradient-to-r from-blue-50 to-cyan-50'
-                  : ''
-              }`}
-            >
-              <div
-                className={`relative flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  selectedDay === dayStatus.day
-                    ? 'ring-2 ring-slate-900 ring-offset-2'
-                    : dayStatus.isToday
-                    ? 'ring-2 ring-blue-400 ring-offset-2'
-                    : ''
-                } ${
-                  dayStatus.isFuture
-                    ? 'bg-slate-100'
-                    : dayStatus.completed
-                    ? 'bg-gradient-to-br from-emerald-400 to-teal-500'
-                    : dayStatus.completionPercentage > 0
-                    ? 'bg-gradient-to-br from-amber-400 to-orange-400'
-                    : 'bg-slate-200'
+              className={`flex-shrink-0 w-full md:w-64 snap-center group/card relative transition-all duration-500 ${dayStatus.isFuture ? 'cursor-not-allowed opacity-50 grayscale' : 'cursor-pointer hover:-translate-y-1'
                 }`}
-                style={{
-                  background: !dayStatus.isFuture && !dayStatus.completed && dayStatus.completionPercentage > 0
-                    ? `conic-gradient(#10b981 ${dayStatus.completionPercentage * 3.6}deg, #f59e0b 0deg)`
-                    : undefined,
-                }}
-              >
-                <div className={`absolute inset-2 rounded-full flex items-center justify-center ${
-                  dayStatus.isFuture
-                    ? 'bg-white'
-                    : dayStatus.completed
-                    ? 'bg-gradient-to-br from-emerald-300 to-teal-400'
-                    : dayStatus.completionPercentage > 0
-                    ? 'bg-gradient-to-br from-amber-300 to-orange-300'
-                    : 'bg-white'
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <div className={`h-full rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden ${selectedDay === dayStatus.day
+                ? 'bg-white ring-2 ring-indigo-500 ring-offset-2 shadow-xl shadow-indigo-500/10 border-transparent'
+                : dayStatus.isToday
+                  ? 'bg-white ring-1 ring-indigo-200 shadow-lg shadow-indigo-500/5 border-indigo-100'
+                  : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
                 }`}>
+
+                {/* Progress Background for partially completed days */}
+                {!dayStatus.completed && dayStatus.completionPercentage > 0 && (
+                  <div
+                    className="absolute bottom-0 left-0 h-1 bg-indigo-500 transition-all duration-500"
+                    style={{ width: `${dayStatus.completionPercentage}%` }}
+                  />
+                )}
+
+                <div className="flex items-start justify-between mb-8">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-colors ${dayStatus.completed
+                    ? 'bg-emerald-100 text-emerald-600'
+                    : dayStatus.isToday
+                      ? 'bg-indigo-100 text-indigo-600'
+                      : 'bg-slate-100 text-slate-500'
+                    }`}>
+                    {dayStatus.day}
+                  </div>
+
                   {dayStatus.completed ? (
-                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    <div className="bg-emerald-500 text-white p-1.5 rounded-full shadow-sm shadow-emerald-500/20">
+                      <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                    </div>
                   ) : (
-                    <Circle className={`w-3 h-3 ${
-                      dayStatus.isFuture ? 'text-slate-300' : 'text-slate-400'
-                    }`} />
+                    <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center ${dayStatus.isToday ? 'border-indigo-100' : 'border-slate-100'
+                      }`}>
+                      <div className={`w-2 h-2 rounded-full ${dayStatus.isToday ? 'bg-indigo-500 animate-pulse' : 'bg-slate-200'
+                        }`} />
+                    </div>
                   )}
                 </div>
 
+                <div>
+                  <div className={`text-sm font-medium mb-1 ${dayStatus.isToday ? 'text-indigo-600' : 'text-slate-400'
+                    }`}>
+                    {new Date(dayStatus.date).toLocaleDateString('en-US', { weekday: 'long' })}
+                  </div>
+                  <div className="text-2xl font-bold text-slate-900">
+                    {new Date(dayStatus.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                </div>
+
                 {dayStatus.isToday && (
-                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-light px-2 py-0.5 rounded-full shadow-sm">
-                    NOW
+                  <div className="absolute top-4 right-1/2 translate-x-1/2 -translate-y-full opacity-0 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-300">
+                    <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
+                      TODAY
+                    </span>
                   </div>
                 )}
               </div>
-
-              <div className="flex-1 text-left">
-                <div className={`font-light text-lg ${
-                  dayStatus.isToday
-                    ? 'text-blue-600'
-                    : dayStatus.isFuture
-                    ? 'text-slate-400'
-                    : 'text-slate-900'
-                }`}>
-                  Day {dayStatus.day}
-                </div>
-                <div className="text-xs text-slate-400 mt-0.5 font-light">
-                  {new Date(dayStatus.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </div>
-              </div>
-
-              {dayStatus.completionPercentage > 0 && !dayStatus.completed && (
-                <div className="text-sm font-light text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                  {dayStatus.completionPercentage}%
-                </div>
-              )}
-
-              {dayStatus.completed && (
-                <div className="text-xs font-light text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
-                  Complete
-                </div>
-              )}
             </button>
           ))}
         </div>
